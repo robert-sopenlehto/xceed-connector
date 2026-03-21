@@ -89,7 +89,7 @@ export interface XceedBooking {
     [key: string]: unknown;
   };
   offer: XceedOffer;
-  channel: string;
+  channel: string | { id?: string; name: string; slug?: string; legacyId?: number; [key: string]: unknown };
   purchasedAt: number;
   confirmed: boolean;
   [key: string]: unknown;

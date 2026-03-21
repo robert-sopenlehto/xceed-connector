@@ -31,7 +31,7 @@ export interface XceedVenue {
 export interface XceedVenueDetail {
   uuid: string;
   name: string;
-  city?: string;
+  city?: string | { id?: string | number; name: string; slug?: string; [key: string]: unknown };
   country?: string;
 }
 

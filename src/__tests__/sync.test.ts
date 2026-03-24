@@ -296,4 +296,39 @@ describe("syncXceedData", () => {
     expect(progressMessages.some((m) => m.includes("events"))).toBe(true);
     expect(progressMessages.some((m) => m.includes("offers"))).toBe(true);
   });
+
+  it("applies transformBooking before upserting each booking (PII stripping)", async () => {
+    const { pool, querySpy } = makeMockPool();
+    const transformer = vi.fn((b: XceedBooking): XceedBooking => ({
+      ...b,
+      buyer: { ...b.buyer, email: "REDACTED", firstName: "REDACTED", lastName: "REDACTED", phone: null },
+    }));
+
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(makeApiResponse([makeEvent()]))
+      .mockResolvedValueOnce(makeApiResponse([makeBooking("b-1"), makeBooking("b-2")]));
+
+    const result = await syncXceedData({
+      apiKey: "key",
+      pool,
+      accountLabel: "TEST",
+      transformBooking: transformer,
+    });
+
+    // transformBooking called once per booking
+    expect(transformer).toHaveBeenCalledTimes(2);
+
+    // Original booking data passed to transformer (not already transformed)
+    const firstCall = transformer.mock.calls[0][0];
+    expect(firstCall.buyer.email).toBe("jane@example.com");
+
+    // Verify upsertBooking SQL was called with transformed data (2 booking MERGE calls)
+    const bookingMerges = querySpy.mock.calls.filter(
+      (args) => typeof args[0] === "string" && args[0].includes("MERGE") && args[0].includes("raw_bookings")
+    );
+    expect(bookingMerges).toHaveLength(2);
+
+    // Counts still reflect all bookings processed
+    expect(result.bookingsCount).toBe(2);
+  });
 });

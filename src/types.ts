@@ -101,6 +101,8 @@ export interface XceedSyncOptions {
   accountLabel: string;
   timeBoxMs?: number;
   onProgress?: (message: string) => void;
+  /** Optional transform applied to each booking before upsert. Use to strip PII for tenants that must not store buyer data. */
+  transformBooking?: (booking: XceedBooking) => XceedBooking;
 }
 
 export interface XceedSyncResult {

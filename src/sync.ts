@@ -90,6 +90,7 @@ export async function syncXceedData(
     accountLabel,
     timeBoxMs = DEFAULT_TIME_BOX_MS,
     onProgress,
+    transformBooking,
   } = options;
 
   const progress = (msg: string) => onProgress?.(msg);
@@ -139,9 +140,10 @@ export async function syncXceedData(
 
     if (page.length === 0) break;
 
-    // Upsert each booking in this page
+    // Upsert each booking in this page (apply transform if provided, e.g. PII stripping)
     for (const booking of page) {
-      await upsertBooking(pool, booking);
+      const b = transformBooking ? transformBooking(booking) : booking;
+      await upsertBooking(pool, b);
     }
     bookingsCount += page.length;
 

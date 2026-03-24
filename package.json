@@ -9,10 +9,11 @@
   "scripts": {
     "build": "tsc",
     "test": "vitest run",
+    "prepare": "npm run build",
     "prepublishOnly": "npm run build"
   },
   "peerDependencies": {
-    "mssql": ">=11.0.0"
+    "mssql": ">=10.0.0"
   },
   "devDependencies": {
     "mssql": "^11.0.1",

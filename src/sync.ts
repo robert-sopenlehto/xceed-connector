@@ -57,8 +57,8 @@ import {
 } from "./sql.js";
 import type { XceedSyncOptions, XceedSyncResult } from "./types.js";
 
-/** Default time-box: 8 minutes — leaves a safety margin before the 10-min Azure limit. */
-const DEFAULT_TIME_BOX_MS = 8 * 60 * 1000;
+/** Default time-box: 5 minutes — leaves a safety margin before the 10-min Azure hard limit. */
+const DEFAULT_TIME_BOX_MS = 5 * 60 * 1000;
 
 /**
  * Orchestrate a full Xceed sync cycle for a single account.
@@ -77,7 +77,7 @@ const DEFAULT_TIME_BOX_MS = 8 * 60 * 1000;
  * @param options.apiKey       Xceed API key for this account
  * @param options.pool         mssql ConnectionPool (consumer-provided)
  * @param options.accountLabel Label used in sync_state key (e.g. "BRUNCH_LISBOA")
- * @param options.timeBoxMs    Max elapsed ms before stopping (default 8 min)
+ * @param options.timeBoxMs    Max elapsed ms before stopping (default 5 min)
  * @param options.onProgress   Optional progress callback wired to consumer logging
  * @returns Counts of synced entities and final state
  */
@@ -90,6 +90,7 @@ export async function syncXceedData(
     accountLabel,
     timeBoxMs = DEFAULT_TIME_BOX_MS,
     onProgress,
+    transformBooking,
   } = options;
 
   const progress = (msg: string) => onProgress?.(msg);
@@ -139,9 +140,10 @@ export async function syncXceedData(
 
     if (page.length === 0) break;
 
-    // Upsert each booking in this page
+    // Upsert each booking in this page (apply transform if provided, e.g. PII stripping)
     for (const booking of page) {
-      await upsertBooking(pool, booking);
+      const b = transformBooking ? transformBooking(booking) : booking;
+      await upsertBooking(pool, b);
     }
     bookingsCount += page.length;
 

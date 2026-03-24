@@ -31,7 +31,7 @@ export interface XceedVenue {
 export interface XceedVenueDetail {
   uuid: string;
   name: string;
-  city?: string;
+  city?: string | { id?: string | number; name: string; slug?: string; [key: string]: unknown };
   country?: string;
 }
 
@@ -89,7 +89,7 @@ export interface XceedBooking {
     [key: string]: unknown;
   };
   offer: XceedOffer;
-  channel: string;
+  channel: string | { id?: string; name: string; slug?: string; legacyId?: number; [key: string]: unknown };
   purchasedAt: number;
   confirmed: boolean;
   [key: string]: unknown;
@@ -101,6 +101,8 @@ export interface XceedSyncOptions {
   accountLabel: string;
   timeBoxMs?: number;
   onProgress?: (message: string) => void;
+  /** Optional transform applied to each booking before upsert. Use to strip PII for tenants that must not store buyer data. */
+  transformBooking?: (booking: XceedBooking) => XceedBooking;
 }
 
 export interface XceedSyncResult {

@@ -1,11 +1,14 @@
 {
   "name": "@robert-sopenlehto/xceed-connector",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Shared Xceed API connector — sync orchestrator + raw table upserts",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["dist/", "sql/"],
+  "files": [
+    "dist/",
+    "sql/"
+  ],
   "scripts": {
     "build": "tsc",
     "test": "vitest run",
